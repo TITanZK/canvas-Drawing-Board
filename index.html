@@ -2,66 +2,92 @@
 <html lang="en">
 
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>画板</title>
-  <link rel="stylesheet" href="index.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>画板</title>
+    <link rel="stylesheet" href="index.css">
 </head>
 
 <body>
-  <!-- <div id="canvas"></div> -->
-  <canvas id="canvas" width="" height=""></canvas>
-  <script>
-    // canvas.onmousemove = (e) => {
-    //   let div = document.createElement('div')
-    //   div.style.position = 'absolute'
-    //   div.style.left = e.clientX + 'px'
-    //   div.style.top = e.clientY + 'px'
-    //   div.style.width = '6px'
-    //   div.style.height = '6px'
-    //   div.style.marginLeft = '-3px'
-    //   div.style.marginTop = '-3px'
-    //   div.style.borderRadius = '50%'
-    //   div.style.backgroundColor = 'black'
-    //   canvas.appendChild(div)
-    //   // 此代码画线非常卡，性能差，不用
-    // }
+    <!-- <div id="canvas"></div> -->
+    <canvas id="canvas" width="" height=""></canvas>
+    <script>
+        // canvas.onmousemove = (e) => {
+        //   let div = document.createElement('div')
+        //   div.style.position = 'absolute'
+        //   div.style.left = e.clientX + 'px'
+        //   div.style.top = e.clientY + 'px'
+        //   div.style.width = '6px'
+        //   div.style.height = '6px'
+        //   div.style.marginLeft = '-3px'
+        //   div.style.marginTop = '-3px'
+        //   div.style.borderRadius = '50%'
+        //   div.style.backgroundColor = 'black'
+        //   canvas.appendChild(div)
+        //   // 此代码画线非常卡，性能差，不用
+        // }
 
-    let canvas = document.getElementById('canvas')
-    // 获取屏幕宽高
-    canvas.width = document.documentElement.clientWidth
-    canvas.height = document.documentElement.clientHeight
-    //画线
+        let canvas = document.getElementById('canvas')
+        // 获取屏幕宽高
+        canvas.width = document.documentElement.clientWidth
+        canvas.height = document.documentElement.clientHeight
+        //画线
+        let ctx = canvas.getContext('2d')
+        ctx.fillStyle = 'black'
+        ctx.strokeStyle = 'black'
+        ctx.lineWidth = 6
+        ctx.lineCap = "round" //lineCap 属性设置或返回线条末端线帽的样式
 
-    let painting = false
+        // drawLine(0, 0, 300, 300)
+        // drawLine(300, 300, 400, 200)
+        //是否继续画
+        let painting = false
 
-    let ctx = canvas.getContext('2d')
-    ctx.fillStyle = 'black'
-    ctx.strokeStyle = 'none'
+        //定义一个变量last记录上次的位置
+        let last
 
-    canvas.onmousedown = () => {
-      painting = true
-    }
+        // 分辨设备是否支持touch
+        // let isTouchDevice = 'ontouchstart' in document.documentElement
+        let isTouchCapable = 'ontouchstart' in window || window.DocumentTouch && document instanceof window
+            .DocumentTouch ||
+            navigator.maxTouchPoints > 0 || window.navigator.msMaxTouchPoints > 0
+        // console.log(isTouchCapable)
 
-    canvas.onmousemove = (e) => {
-      if (painting === true) {
-        ctx.beginPath()
-        ctx.arc(e.clientX, e.clientY, 3, 0, 2 * Math.PI)
-        ctx.stroke()
-        ctx.fill()
-      } else {
-
-      }
-    }
-
-    canvas.onmouseup = () => {
-      painting = false
-    }
-
-
-
-    // 
-  </script>
+        if (isTouchCapable) { //支持移动设备
+            canvas.ontouchstart = (e) => {
+                let x = e.touches[0].clientX
+                let y = e.touches[0].clientY
+                last = [x, y]
+            }
+            canvas.ontouchmove = (e) => {
+                let x = e.touches[0].clientX
+                let y = e.touches[0].clientY
+                drawLine(last[0], last[1], x, y)
+                last = [x, y]
+            }
+        } else { //不支持移动设备
+            canvas.onmousedown = (e) => {
+                painting = true
+                last = [e.clientX, e.clientY]
+            }
+            canvas.onmousemove = (e) => {
+                if (painting === true) {
+                    drawLine(last[0], last[1], e.clientX, e.clientY)
+                    last = [e.clientX, e.clientY]
+                }
+            }
+            canvas.onmouseup = () => {
+                painting = false
+            }
+        }
+        //画直线的方法
+        function drawLine(x, y, X, Y) {
+            ctx.beginPath();
+            ctx.moveTo(x, y);
+            ctx.lineTo(X, Y);
+            ctx.stroke();
+        }
+    </script>
 </body>
 
 </html>
